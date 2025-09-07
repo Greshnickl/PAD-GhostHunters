@@ -43,7 +43,7 @@ This project is structured around a microservices architecture to ensure modular
 
 - Each ghost runs as a separate Thread/Actor with its own decision-making.
 
-### Processes:
+- ### Processes:
 
    -- Map layout.
    -- Difficulty settings.
