@@ -1,0 +1,37 @@
+flowchart LR
+    Players[Players / Clients] --> GS[Game Service]
+
+    subgraph Game Service["Game Service"]
+        GS[Game Service]
+    end
+
+    subgraph UserManagement["User Management Service"]
+        UDB[(Users DB)]
+        UM[User API]
+    end
+
+    subgraph GhostAI["Ghost AI Service"]
+        GA[Ghost AI Logic]
+    end
+
+    subgraph ShopService["Shop Service"]
+        SDB[(Items DB)]
+        SHOP[Shop API]
+    end
+
+    subgraph JournalService["Journal Service"]
+        JDB[(Journal DB)]
+        JOURNAL[Journal API]
+    end
+
+    subgraph LobbyService["Lobby Service"]
+        LDB[(Lobby DB)]
+        LOBBY[Lobby API]
+    end
+
+
+    GS <--> UM
+    GS <--> GA
+    GS <--> SHOP
+    GS <--> JOURNAL
+    GS <--> LOBBY
