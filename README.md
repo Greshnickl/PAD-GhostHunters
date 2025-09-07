@@ -149,4 +149,4 @@ This project is structured around a microservices architecture to ensure modular
 
 ### Architecture diagram
 
-![Architecture diagram] (diagrams/architect-diagram.png)
+![Architecture diagram](diagrams/architect-diagram.png)
