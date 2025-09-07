@@ -5,8 +5,6 @@
 This project is structured around a microservices architecture to ensure modularity, scalability, and independent deployment of each component. Each service is responsible for a specific domain of the game and communicates with others where required.
 
 ## Services Overview
-1. User Management Service
-=======
 
 ## 1. User Management Service
 
