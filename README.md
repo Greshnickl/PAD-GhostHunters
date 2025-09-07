@@ -143,3 +143,10 @@ This project is structured around a microservices architecture to ensure modular
 -Players/Clients.
 
 - Players via Game Service.
+
+
+
+
+### Architecture diagram
+
+![Architecture diagram] (diagrams/architect-diagram.png)
