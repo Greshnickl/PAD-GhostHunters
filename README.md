@@ -32,3 +32,41 @@ This project is structured around a microservices architecture to ensure modular
 ### Consumed by:
 
 - Game Service (for retrieving player info during active sessions).
+
+---
+
+## 2. Ghost AI Service
+
+### Responsibilities:
+
+- Controls the game’s ghost AI behavior.
+
+- Each ghost runs as a separate Thread/Actor with its own decision-making.
+
+### Processes:
+
+  - Map layout.
+  
+  - Difficulty settings.
+  
+  - Player sanity levels.
+
+  - Movable/interactable objects.
+
+  - Player targeting and attack decisions.
+
+- Sends AI state updates to the Game Service.
+
+### Service Boundaries:
+
+- Does not manage user data.
+
+- Encapsulates all ghost logic independent of the game state store.
+
+### Interfaces/Consumers:
+
+- Provides APIs/events for ghost state changes (hiding, haunting, interacting).
+
+### Consumed by:
+
+- Game Service (to update lobby and broadcast changes to players).
