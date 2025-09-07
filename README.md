@@ -45,15 +45,11 @@ This project is structured around a microservices architecture to ensure modular
 
 ### Processes:
 
-  - - Map layout.
-  
-  - - Difficulty settings.
-  
-  - - Player sanity levels.
-
-  - - Movable/interactable objects.
-
-  - - Player targeting and attack decisions.
+   -- Map layout.
+   -- Difficulty settings.
+   -- Player sanity levels.
+   -- Movable/interactable objects.
+   -- Player targeting and attack decisions.
 
 - Sends AI state updates to the Game Service.
 
