@@ -4,3 +4,6 @@
 [submodule "PAD-GhostAIService"]
 	path = PAD-GhostAIService
 	url = https://github.com/Greshnickl/PAD-GhostAIService
+[submodule "PAD-ShopService"]
+	path = PAD-ShopService
+	url = https://github.com/Greshnickl/PAD-ShopService
