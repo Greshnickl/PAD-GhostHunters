@@ -1,0 +1,3 @@
+[submodule "PAD-UserManagementService"]
+	path = PAD-UserManagementService
+	url = https://github.com/Greshnickl/PAD-UserManagementService
