@@ -7,3 +7,6 @@
 [submodule "PAD-ShopService"]
 	path = PAD-ShopService
 	url = https://github.com/Greshnickl/PAD-ShopService
+[submodule "PAD-JournalService"]
+	path = PAD-JournalService
+	url = https://github.com/Greshnickl/PAD-JournalService
