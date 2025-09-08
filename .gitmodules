@@ -13,3 +13,6 @@
 [submodule "PAD-LobbyService"]
 	path = PAD-LobbyService
 	url = https://github.com/Greshnickl/PAD-LobbyService
+[submodule "PAD-GameService"]
+	path = PAD-GameService
+	url = https://github.com/Greshnickl/PAD-GameService
