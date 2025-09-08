@@ -1,3 +1,6 @@
 [submodule "PAD-UserManagementService"]
 	path = PAD-UserManagementService
 	url = https://github.com/Greshnickl/PAD-UserManagementService
+[submodule "PAD-GhostAIService"]
+	path = PAD-GhostAIService
+	url = https://github.com/Greshnickl/PAD-GhostAIService
