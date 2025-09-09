@@ -86,27 +86,10 @@ This project is structured around a microservices architecture to ensure modular
 
  Game Service, Inventory Service.
 
----
-
-## 4. Journal Service
-
-### Responsibilities:
-
-- Allows users to record symptoms and ghost guesses.
-
-- Awards currency based on correct entries after games.
-
-### Service Boundaries:
-
-- Handles journal entries only.
-
-### Consumers:
-
-- Game Service for reward processing.
 
 ---
 
-## 5. Lobby Service
+## 4. Lobby Service
 
 ### Responsibilities:
 
@@ -126,23 +109,6 @@ This project is structured around a microservices architecture to ensure modular
 
 ---
 
-## 6. Game Service (Coordinator)
-
-### Responsibilities:
-
-- Orchestrates game sessions, lobbies, and player interactions.
-
-- Communicates with all other services to manage real-time gameplay.
-
-### Service Boundaries:
-
-- Does not store domain-specific data (users, ghosts, items).
-
-### Consumers:
-
--Players/Clients.
-
-- Players via Game Service.
 
 
 
