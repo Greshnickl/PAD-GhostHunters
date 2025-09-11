@@ -204,7 +204,74 @@ This combination of technologies allows us to **balance speed of development, ru
 - Game Service (to render maps for players).
 
 
+---
 
+## 7. Ghost Service
+
+### Responsibilities:
+- Acts as an encyclopedia of all ghost types in the game world.
+- Stores and provides information about ghost **Type A symptoms**:
+  - Breaking mirrors, moving objects, creating cold spots, etc.
+  - Visible to players for guessing purposes.
+- Stores **Type B symptoms**:
+  - Hunting behavior based on player sanity or group status.
+  - Used for players to discover through observation.
+- Provides ghost data for gameplay mechanics and player education.
+
+### Service Boundaries:
+- Encapsulates only ghost-related information and symptoms.
+- Does not manage user data, session states, or player inventory.
+- Independent of game sessions; only consumed by other services for ghost info.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Retrieving ghost types and symptoms (A & B).
+- Listing ghosts available in specific maps or sessions.
+
+**Consumed by:**
+- Lobby Service (to know which ghost is active in the session).
+- Game Service (for gameplay mechanics and player feedback).
+- Journal Service (to validate player observations).
+
+### Trade-offs:
+- **Pros:** Centralized ghost information ensures consistency across the game. Easy to expand with new ghost types or symptoms.  
+- **Cons:** Requires synchronization with session state if ghost behavior changes dynamically. Large data sets may require caching for performance.  
+
+---
+
+## 8. Location Service
+
+### Responsibilities:
+- Tracks player movements in real-time.
+- Records:
+  - Current room location.
+  - Items the player interacts with.
+  - Player state (alone/in group, speaking, hiding, visible).
+  - Timestamps for each update.
+- Provides fresh location data to other services for gameplay mechanics.
+
+### Service Boundaries:
+- Only responsible for location tracking and real-time player states.
+- Does not manage user accounts, game sessions, or AI behavior.
+- Operates independently but provides data for session and game logic.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Querying current player location and state.
+- Subscribing to location updates (for live sessions).
+
+**Consumed by:**
+- Lobby Service (to manage session state and item interactions).
+- Ghost AI Service (to make decisions based on player positions).
+- Game Service (for real-time player visibility and events).
+
+### Trade-offs:
+- **Pros:** Dedicated service ensures accurate real-time tracking. Can scale independently to handle many players.  
+- **Cons:** High frequency updates may require efficient storage and caching. Needs careful handling to avoid stale data or race conditions.
+
+---
 
 ### Architecture diagram
 
@@ -335,3 +402,39 @@ Services communicate via **REST APIs** for synchronous operations and **message 
 - **Fit:** Perfect for CRUD-heavy, content-driven service where flexibility matters more than raw speed.
 
 ---
+
+## 7. Ghost Service
+
+### Technologies:
+- **Node.js (Express / Fastify)** for REST API endpoints and service logic.
+- **PostgreSQL** (or any relational DB) to store ghost types and symptoms.
+- **Redis** (optional) for caching frequently accessed ghost data.
+- **Worker threads / Bull (Queue)** for batch updates or complex ghost behavior processing.
+
+### Communication Patterns:
+- **REST API** for retrieving ghost types and symptoms.
+- **Event-driven (Message Queue, e.g., Kafka/RabbitMQ)** for notifying Lobby or Game Service about ghost updates or new ghost additions.
+
+### Motivation & Trade-offs:
+- **Pros:** Node.js provides fast I/O, easy JSON handling, and event-driven concurrency for multiple requests.  
+- **Cons:** CPU-intensive tasks (complex ghost AI logic) may block the event loop; requires worker threads or separate services for heavy computations.
+
+---
+
+## 8. Location Service
+
+### Technologies:
+- **Node.js (Express / Fastify)** for REST API endpoints.
+- **Redis** for fast in-memory storage of player locations and real-time state.
+- **PostgreSQL** for historical location logs and session tracking.
+- **WebSockets (Socket.IO)** for real-time broadcasting of player locations.
+- **Bull / Queue workers** for background tasks such as cleanup or aggregation.
+
+### Communication Patterns:
+- **REST API** for querying player positions and state.
+- **WebSockets** for real-time broadcasting of location updates to Lobby and Ghost AI.
+- **Event-driven (Message Queue)** for notifying other services when player location changes trigger game events.
+
+### Motivation & Trade-offs:
+- **Pros:** Node.js + Redis + WebSockets allows efficient real-time tracking. Flexible and easy to maintain schema for dynamic player state.  
+- **Cons:** High-frequency updates can stress the event loop; requires scaling horizontally or using worker threads for heavy workloads.
