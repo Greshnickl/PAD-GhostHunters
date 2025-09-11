@@ -441,6 +441,659 @@ Services communicate via **REST APIs** for synchronous operations and **message 
 
 ---
 
+# Ghost Hunters – API Reference (v1)
+
+**Base URL:** `/api/v1`  
+**Auth:** Bearer JWT in `Authorization: Bearer <token>` (except register/login)  
+**Content-Type:** `application/json`  
+**Timestamps:** ISO-8601 UTC
+
+### Error model (uniform)
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "Item not found",
+    "details": { "field": "itemId" }
+  }
+}
+```
+
+---
+
+## User Management Service
+
+### POST `/users/register` – Consumed by Gateway
+**Description**  
+Creates a new user account with **initial currency** (e.g., `100`).
+
+**Payload**
+```json
+{
+  "email": "player@example.com",
+  "username": "PlayerOne",
+  "password": "SecurePassword123"
+}
+```
+
+**Response**
+```json
+{
+  "user": {
+    "id": "uuid-here",
+    "email": "player@example.com",
+    "username": "PlayerOne",
+    "level": 1,
+    "currency": 100,
+    "createdAt": "2025-09-09T10:00:00Z"
+  },
+  "accessToken": "jwt-token-here",
+  "refreshToken": "jwt-refresh-here"
+}
+```
+
+### POST `/users/login`
+**Description**  
+Authenticates a user and returns access/refresh tokens.
+
+**Payload**
+```json
+{ "email": "player@example.com", "password": "SecurePassword123" }
+```
+
+**Response**
+```json
+{
+  "user": { "id": "uuid", "username": "PlayerOne", "level": 1, "currency": 100 },
+  "accessToken": "jwt-token-here",
+  "refreshToken": "jwt-refresh-here"
+}
+```
+
+### POST `/users/refresh`
+**Description**  
+Exchanges a valid refresh token for a new access token.
+
+**Payload**
+```json
+{ "refreshToken": "jwt-refresh-here" }
+```
+
+**Response**
+```json
+{ "accessToken": "new-jwt-token-here" }
+```
+
+### GET `/users/{id}`
+**Description**  
+Returns public profile and currency/wallet.
+
+**Response**
+```json
+{
+  "id": "uuid",
+  "email": "player@example.com",
+  "username": "PlayerOne",
+  "level": 5,
+  "currency": 245
+}
+```
+
+### PATCH `/users/{id}`
+**Description**  
+Update username or level (self or admin).
+
+**Payload**
+```json
+{ "username": "NewName", "level": 6 }
+```
+
+**Response**
+```json
+{ "id": "uuid", "username": "NewName", "level": 6 }
+```
+
+### GET `/users/{id}/friends`
+**Description**  
+List friends for a user.
+
+**Response**
+```json
+{
+  "friends": [
+    { "id": "uuid-a", "username": "Alfa", "level": 3 },
+    { "id": "uuid-b", "username": "Bravo", "level": 2 }
+  ]
+}
+```
+
+### POST `/users/{id}/friends`
+**Description**  
+Send a friend request.
+
+**Payload**
+```json
+{ "friendId": "uuid-of-other-user" }
+```
+
+**Response**
+```json
+{ "status": "pending" }
+```
+
+### DELETE `/users/{id}/friends/{friendId}`
+**Description**  
+Remove a friend (or cancel pending request).
+
+**Response**
+```json
+{ "deleted": true }
+```
+
+---
+
+## Ghost AI Service
+
+### POST `/ghostai/lobbies/{lobbyId}/spawn`
+**Description**  
+Starts a dedicated AI worker for the lobby.
+
+**Payload**
+```json
+{
+  "ghostTypeId": "uuid-ghost",
+  "mapId": "uuid-map",
+  "difficulty": "NORMAL"
+}
+```
+
+**Response**
+```json
+{ "taskId": "uuid-task", "status": "started" }
+```
+
+### POST `/ghostai/lobbies/{lobbyId}/update-context`
+**Description**  
+Pushes live context (players, sanity, positions, objects) to AI.
+
+**Payload**
+```json
+{
+  "players": [
+    { "userId": "uuid-u1", "sanity": 72.5, "roomId": "uuid-r1", "alone": true }
+  ],
+  "objects": [
+    { "id": "uuid-obj1", "state": "BROKEN" }
+  ]
+}
+```
+
+**Response**
+```json
+{ "accepted": true, "queuedAt": "2025-09-09T10:01:00Z" }
+```
+
+### DELETE `/ghostai/lobbies/{lobbyId}`
+**Description**  
+Stops the AI worker for a lobby.
+
+**Response**
+```json
+{ "stopped": true }
+```
+
+---
+
+## Shop Service
+
+### GET `/items`
+**Description**  
+List items with current price.
+
+**Response**
+```json
+{
+  "total": 2,
+  "page": 1,
+  "pageSize": 20,
+  "items": [
+    {
+      "id": "uuid-i1",
+      "title": "EMF Reader",
+      "description": "Detects electromagnetic fields.",
+      "durability": 5,
+      "price": { "amount": 50, "currency": "CRD" }
+    },
+    {
+      "id": "uuid-i2",
+      "title": "Thermometer",
+      "description": "Measures temperature.",
+      "durability": 10,
+      "price": { "amount": 30, "currency": "CRD" }
+    }
+  ]
+}
+```
+
+### GET `/items/{id}`
+**Description**  
+Get one item with current price.
+
+**Response**
+```json
+{
+  "id": "uuid-i1",
+  "title": "EMF Reader",
+  "description": "Detects electromagnetic fields.",
+  "durability": 5,
+  "price": { "amount": 50, "currency": "CRD" }
+}
+```
+
+### GET `/items/{id}/prices`
+**Description**  
+Returns price history.
+
+**Response**
+```json
+{
+  "history": [
+    { "price": { "amount": 50, "currency": "CRD" }, "since": "2025-09-01T00:00:00Z" },
+    { "price": { "amount": 45, "currency": "CRD" }, "since": "2025-08-01T00:00:00Z" }
+  ]
+}
+```
+
+### POST `/items`
+**Description**  
+Create a new shop item.
+
+**Payload**
+```json
+{
+  "title": "UV Flashlight",
+  "description": "Reveals traces.",
+  "durability": 8,
+  "price": { "amount": 40, "currency": "CRD" }
+}
+```
+
+**Response**
+```json
+{ "id": "uuid-new-item" }
+```
+
+### PATCH `/items/{id}/price`
+**Description**  
+Update the active price.
+
+**Payload**
+```json
+{ "price": { "amount": 55, "currency": "CRD" } }
+```
+
+**Response**
+```json
+{ "id": "uuid-i1", "price": { "amount": 55, "currency": "CRD" } }
+```
+
+---
+
+## Journal Service
+
+### POST `/journals`
+**Description**  
+Create a journal for a user in a lobby.
+
+**Payload**
+```json
+{
+  "lobbyId": "uuid-l1",
+  "userId": "uuid-u1",
+  "observations": [
+    { "symptom": "Freezing temperature", "evidence": "Thermo at -5°C" }
+  ],
+  "guessGhostTypeId": "uuid-ghost"
+}
+```
+
+**Response**
+```json
+{ "journalId": "uuid-j1" }
+```
+
+### GET `/journals/{journalId}`
+**Description**  
+Get one journal with entries.
+
+**Response**
+```json
+{
+  "id": "uuid-j1",
+  "lobbyId": "uuid-l1",
+  "userId": "uuid-u1",
+  "observations": [
+    { "symptom": "Freezing temperature", "evidence": "Thermo at -5°C" }
+  ],
+  "guessGhostTypeId": "uuid-ghost",
+  "submittedAt": "2025-09-09T10:02:00Z"
+}
+```
+
+### GET `/lobbies/{lobbyId}/journals`
+**Description**  
+List journals for a lobby.
+
+**Response**
+```json
+{
+  "journals": [
+    { "id": "uuid-j1", "userId": "uuid-u1" },
+    { "id": "uuid-j2", "userId": "uuid-u2" }
+  ]
+}
+```
+
+### POST `/journals/{journalId}/finalize`
+**Description**  
+Finalize and score a journal.
+
+**Payload**
+```json
+{ "actualGhostTypeId": "uuid-ghost-real" }
+```
+
+**Response**
+```json
+{ "awarded": { "amount": 120, "currency": "CRD" } }
+```
+
+---
+
+## Lobby Service
+
+### POST `/lobbies`
+**Description**  
+Create a lobby and spawn Ghost AI.
+
+**Payload**
+```json
+{
+  "hostUserId": "uuid-host",
+  "mapId": "uuid-map",
+  "difficulty": "HARD",
+  "maxPlayers": 4
+}
+```
+
+**Response**
+```json
+{
+  "id": "uuid-l1",
+  "difficulty": "HARD",
+  "mapId": "uuid-map",
+  "players": [
+    { "userId": "uuid-host", "sanity": 100.0, "dead": false, "items": [] }
+  ],
+  "status": "open"
+}
+```
+
+### POST `/lobbies/{id}/join`
+**Description**  
+Join a lobby.
+
+**Payload**
+```json
+{ "userId": "uuid-u2" }
+```
+
+**Response**
+```json
+{ "id": "uuid-l1", "players": [{ "userId": "uuid-host" }, { "userId": "uuid-u2" }] }
+```
+
+### POST `/lobbies/{id}/leave`
+**Description**  
+Leave a lobby.
+
+**Payload**
+```json
+{ "userId": "uuid-u2" }
+```
+
+**Response**
+```json
+{ "left": true }
+```
+
+### PATCH `/lobbies/{id}/players/{userId}`
+**Description**  
+Update player state.
+
+**Payload**
+```json
+{ "sanity": 45.3, "dead": false }
+```
+
+**Response**
+```json
+{ "userId": "uuid-u2", "sanity": 45.3, "dead": false }
+```
+
+### POST `/lobbies/{id}/items/bring`
+**Description**  
+Bring an item into lobby.
+
+**Payload**
+```json
+{ "userId": "uuid-u2", "inventoryId": "uuid-inv-1" }
+```
+
+**Response**
+```json
+{ "added": true }
+```
+
+### GET `/lobbies/{id}`
+**Description**  
+Get current lobby state.
+
+**Response**
+```json
+{
+  "id": "uuid-l1",
+  "difficulty": "HARD",
+  "mapId": "uuid-map",
+  "players": [
+    { "userId": "uuid-host", "sanity": 88.2, "dead": false },
+    { "userId": "uuid-u2", "sanity": 45.3, "dead": false }
+  ],
+  "status": "active"
+}
+```
+
+---
+
+## Map Service
+
+### GET `/maps`
+**Description**  
+List maps.
+
+**Response**
+```json
+{
+  "total": 1,
+  "page": 1,
+  "pageSize": 20,
+  "maps": [
+    { "id": "uuid-map", "name": "Willow Street House" }
+  ]
+}
+```
+
+### GET `/maps/{id}`
+**Description**  
+Get map structure.
+
+**Response**
+```json
+{
+  "id": "uuid-map",
+  "name": "Willow Street House",
+  "rooms": [{ "id": "uuid-r1", "name": "Kitchen" }],
+  "connections": [{ "from": "uuid-r1", "to": "uuid-r2" }],
+  "objects": [{ "id": "uuid-obj1", "roomId": "uuid-r1", "type": "Mirror" }],
+  "hidingSpots": [{ "id": "uuid-h1", "roomId": "uuid-r2", "meta": { "cover": "car" } }]
+}
+```
+
+### POST `/maps`
+**Description**  
+Create a map.
+
+**Payload**
+```json
+{
+  "name": "Bleasdale Farmhouse",
+  "rooms": [{ "name": "Living Room" }, { "name": "Basement" }]
+}
+```
+
+**Response**
+```json
+{ "mapId": "uuid-new-map" }
+```
+
+### PATCH `/maps/{id}`
+**Description**  
+Update a map.
+
+**Payload**
+```json
+{ "name": "Bleasdale Farmhouse (v2)" }
+```
+
+**Response**
+```json
+{ "id": "uuid-map", "name": "Bleasdale Farmhouse (v2)" }
+```
+
+---
+
+## Ghost Service
+
+### GET `/ghosts`
+**Description**  
+List ghost types.
+
+**Response**
+```json
+{
+  "ghosts": [
+    {
+      "id": "uuid-ghost",
+      "name": "Banshee",
+      "typeASymptoms": ["Screams", "Breaks mirrors"]
+    }
+  ]
+}
+```
+
+### GET `/ghosts/{id}`
+**Description**  
+Get one ghost type.
+
+**Response**
+```json
+{
+  "id": "uuid-ghost",
+  "name": "Banshee",
+  "typeASymptoms": ["Screams", "Breaks mirrors"]
+}
+```
+
+### POST `/ghosts`
+**Description**  
+Create a ghost type.
+
+**Payload**
+```json
+{
+  "name": "Yurei",
+  "typeASymptoms": ["Freezing", "Ghost orbs"]
+}
+```
+
+**Response**
+```json
+{ "id": "uuid-new-ghost" }
+```
+
+### PATCH `/ghosts/{id}`
+**Description**  
+Update a ghost type.
+
+**Payload**
+```json
+{ "name": "Yurei (v2)", "typeASymptoms": ["Freezing", "Orbs", "Footsteps"] }
+```
+
+**Response**
+```json
+{ "id": "uuid-ghost", "name": "Yurei (v2)" }
+```
+
+---
+
+## Location Service
+
+### POST `/location/track`
+**Description**  
+Append a location sample for a user.
+
+**Payload**
+```json
+{
+  "userId": "uuid-u1",
+  "lobbyId": "uuid-l1",
+  "roomId": "uuid-r2",
+  "isSpeaking": true,
+  "group": ["uuid-u2"],
+  "isHiding": false,
+  "at": "2025-09-09T10:05:30Z"
+}
+```
+
+**Response**
+```json
+{ "accepted": true }
+```
+
+### GET `/location/lobbies/{lobbyId}/users/{userId}/latest`
+**Description**  
+Get the latest known location for a user.
+
+**Response**
+```json
+{
+  "roomId": "uuid-r2",
+  "isAlone": false,
+  "lastSeenAt": "2025-09-09T10:05:30Z"
+}
+```
+
+---
+
+### Notes
+- All POST/DELETE operations that affect wallet/inventory/lobby can accept `Idempotency-Key` header.
+- Pagination: `?page` (default 1), `?pageSize` (default 20). Responses include `total`, `page`, `pageSize`.
+
+
+---
+
+
 # GitHub Workflow
 
 To ensure consistency and maintain high-quality contributions, we follow a structured workflow in this project.  
