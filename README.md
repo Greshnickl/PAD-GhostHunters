@@ -438,3 +438,94 @@ Services communicate via **REST APIs** for synchronous operations and **message 
 ### Motivation & Trade-offs:
 - **Pros:** Node.js + Redis + WebSockets allows efficient real-time tracking. Flexible and easy to maintain schema for dynamic player state.  
 - **Cons:** High-frequency updates can stress the event loop; requires scaling horizontally or using worker threads for heavy workloads.
+
+---
+
+# GitHub Workflow
+
+To ensure consistency and maintain high-quality contributions, we follow a structured workflow in this project.  
+This section describes how branching, merging, reviews, and versioning are handled.
+
+---
+
+## 1. Branching Strategy
+
+We use two primary branches:
+
+- **`main`** → Stable production-ready branch.  
+- **`dev`** → Integration branch where features are merged before release.
+
+### Branch Naming Convention
+
+- **Feature branches:** `feature/<short-description>`  
+  - Example: `feature/user-authentication`
+- **Bugfix branches:** `bugfix/<issue-number>-<short-description>`  
+  - Example: `bugfix/123-fix-lobby-crash`
+- **Hotfix branches (critical fixes to main):** `hotfix/<short-description>`  
+  - Example: `hotfix/fix-login-token`
+
+---
+
+## 2. Merging Strategy
+
+- All changes must be proposed via **Pull Requests (PRs)** into the `development` branch.  
+- PRs into `main` happen only from `development` once a release is ready.  
+- **Fast-forward merges are not allowed** → We use **Squash and Merge** for clean history.  
+
+---
+
+## 3. Pull Requests (PRs)
+
+Each PR must include:
+
+- **Title** → Clear and descriptive (e.g., `Add Ghost AI decision-making module`)  
+- **Description** → What was done, why, and how it was tested.  
+- **Linked Issues** → Reference issues with `Closes #issueNumber`.  
+- **Checklist**:
+  - [ ] Code compiles successfully  
+  - [ ] Tests are written/updated  
+  - [ ] Documentation updated (if needed)  
+
+---
+
+## 4. Code Reviews & Approvals
+
+- At least **2 approvals** are required for merging a PR.  
+- **Self-approval is not allowed**.  
+- **Requested changes must be resolved** before merging.  
+
+---
+
+## 5. Test Coverage
+
+- All new features must include **unit and integration tests**.  
+- Minimum **80% coverage** enforced via CI (GitHub Actions).  
+- Tests are run automatically on each PR.  
+
+---
+
+## 6. Versioning
+
+- We follow **Semantic Versioning (SemVer)**:  
+  - **MAJOR** version → Incompatible API changes  
+  - **MINOR** version → Backward-compatible new features  
+  - **PATCH** version → Backward-compatible bug fixes  
+
+Example: `v2.1.4` → Major release 2, minor update 1, patch 4.  
+
+---
+
+## 7. Continuous Integration / Deployment (CI/CD)
+
+- **CI** runs on every PR → Builds, runs tests, checks coverage.  
+- **CD** is triggered from `main` → Deploys stable release.  
+
+---
+
+## 8. Release Workflow
+
+1. Work is merged into `development`.  
+2. Once stable → Create a **release branch**: `release/x.y.z`.  
+3. Test and validate → Merge into `main`.  
+4. Tag release with version number.  
+5. Deploy automatically via GitHub Actions.  
