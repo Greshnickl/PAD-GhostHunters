@@ -2,10 +2,15 @@
 
 ## Game Microservices – Service Boundaries
 
-This project follows a microservices architecture to ensure modularity, scalability, and independent deployment of each component. Each service is implemented in a different language to promote polyglot programming, reflecting the diversity of team expertise and optimizing for specific business needs.
+This project is built using a **microservices architecture** to ensure modularity, scalability, and independent deployment of each component. Each service is implemented in a language chosen to best fit its specific responsibilities, allowing the team to leverage **polyglot programming** for optimal performance and maintainability.
 
-We use Python and Go, as they are simple to learn, widely supported, and well-suited for game backend scenarios.
-Python is chosen for services that need flexibility and fast iteration (user data, AI logic), while Go is selected for performance-critical and real-time state management (shop, lobby).
+We selected **JavaScript (Node.js)**, **C# (.NET)**, and **Python** for this project:  
+- **JavaScript (Node.js)** is used for services requiring high concurrency and fast development cycles, such as user management and ghost AI. Its event-driven model and rich ecosystem make it ideal for real-time operations and rapid prototyping.  
+- **C# (.NET)** is used for services that demand strong type safety, reliability, and transactional consistency, such as Shop and Journal. It provides excellent performance under load and robust tooling for enterprise-grade APIs.  
+- **Python** is chosen for services that benefit from flexibility, simplicity, and fast iteration, such as Lobby and Map. Its async capabilities and mature libraries allow efficient handling of multiple game sessions and dynamic content management.
+
+This combination of technologies allows us to **balance speed of development, runtime performance, and maintainability**, ensuring each service meets the unique demands of the game while allowing teams to work efficiently within their expertise.
+
 
 ## Services Overview
 
@@ -13,107 +18,258 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 ## 1. User Management Service
 
 ### Responsibilities:
-
 - Manage user accounts and authentication (email, username, password).
-
 - Store and update player metadata (level, in-game currency).
-
 - Implement a friend system (add, remove, list friends).
 
 ### Service Boundaries:
+- Handles only user-related data and social relationships.
+- Does not manage game session logic, AI behavior, or inventory.
+- Provides identity and social graph for other services to consume.
 
-- Handles only user-related data and relationships.
+### Interfaces / Consumers:
 
-- Does not directly interact with game logic or AI.
+**Provides APIs for:**
+- User authentication and profile management.
+- Currency balance queries and updates.
+- Friend system operations.
 
-### Interfaces/Consumers:
+**Consumed by:**
+- Lobby Service (to fetch player info for sessions).
+- Inventory Service (currency validation for purchases).
+- Game Service (to load player profile into active sessions).
 
-### Provides APIs for:
-
-- User authentication & profile data.
-
-- Friend lists (for social and cooperative play).
-
-### Consumed by:
-
-- Lobby Service (fetch user info).
-
-- Inventory Service (currency checks).
 
 ---
 
 ## 2. Ghost AI Service
 
 ### Responsibilities:
-
-- Controls the game’s ghost AI behavior.
-
-- Each ghost runs as a separate Thread/Actor with its own decision-making.
-
-- ### Processes:
-
-   - Map layout.
-   - Difficulty settings.
-   - Player sanity levels.
-   - Movable/interactable objects.
-   - Player targeting and attack decisions.
-
-- Sends AI state updates to the Game Service.
+- Controls ghost AI behavior within each game lobby.
+- Each ghost runs as an independent Thread/Actor (can be simulated with Node.js worker threads or clustered processes).
+- Processes contextual data, such as:
+  - Map layout.
+  - Difficulty settings.
+  - Player sanity levels.
+  - Movable/interactable objects.
+  - Player targeting and attack decisions.
+- Relays ghost state changes to the Game Service.
 
 ### Service Boundaries:
+- Encapsulates all ghost decision-making logic.
+- Does not store user data or session management.
+- Operates independently of other services, but shares state updates as needed.
 
-- Does not manage user data.
+### Interfaces / Consumers:
 
-- Encapsulates all ghost logic independent of the game state store.
+**Provides APIs/events for:**
+- Ghost state changes (hiding, haunting, interacting).
+- AI decisions relevant to player interactions.
 
-### Interfaces/Consumers:
+**Consumed by:**
+- Game Service (to update lobby state and broadcast ghost activity to players).
+- Lobby Service (to synchronize ghost type and behavior with session state).
 
-- Provides APIs/events for ghost state changes (hiding, haunting, interacting).
 
-### Consumed by:
+--- 
 
-- Lobby Service (session updates).
-
----
 
 ## 3. Shop Service
 
 ### Responsibilities:
-
-- Provides catalog of purchasable items (title, description, durability, price).
-
-- Maintains price history.
+- Provides a catalog of purchasable items:
+  - Title, description, durability (number of sessions usable).
+  - Current price and full price history.
+- Ensures items and prices are accessible to players during gameplay.
+- Allows dynamic price updates with historical tracking.
 
 ### Service Boundaries:
+- Handles only item-related data and price management.
+- Does not manage player ownership (handled by Inventory Service).
+- Independent from gameplay logic, only provides catalog information and updates.
 
-- Handles item data only.
+### Interfaces / Consumers:
 
-### Consumers:
+**Provides APIs for:**
+- Listing items with descriptions, durability, and prices.
+- Retrieving price history for each item.
+- Updating prices.
 
-- Inventory Service (item ownership).
-
-- Lobby Service (loading items into session).
+**Consumed by:**
+- Inventory Service (to validate item purchases).
+- Lobby Service (to load selected items into sessions).
+- Game Service (to display purchasable content).
 
 
 ---
 
-## 4. Lobby Service
+## 4. Journal Service
 
 ### Responsibilities:
-
-- Tracks active game sessions, players in them, their sanity, death status.
-
-- Manages items brought into the session and their holders.
-
-- Tracks ghost type and map for each session.
+- Allows players to record:
+  - Symptoms observed during exploration.
+  - Type of ghost they believe they encountered.
+- Stores journal entries per user and session.
+- Validates journal entries at the end of a session by comparing them to the actual ghost type.
+- Awards in-game currency for accurate records.
 
 ### Service Boundaries:
+- Encapsulates only journal-related data and validation.
+- Does not manage user authentication, ghost AI, or currency itself (delegates currency update to User Management Service).
+- Independent of session management, only consumes final game state to validate entries.
 
-- Maintains session state and metadata only.
+### Interfaces / Consumers:
 
-### Consumers:
+**Provides APIs for:**
+- Creating and updating journal entries.
+- Retrieving entries by user or session.
+- Validating journal results at game end.
 
-- Inventory Service (item ownership).
+**Consumed by:**
+- Lobby Service (to know which player journals to check).
+- User Management Service (to reward currency for correct guesses).
+- Game Service (to compare journal entries with actual ghost).
+
+
+---
+
+## 5. Lobby Service
+
+### Responsibilities:
+- Manages **active game sessions**, storing:
+  - Difficulty level.
+  - Players in the session, with:
+    - Sanity levels.
+    - Death status.
+  - Items brought into the session and their current holders.
+  - Ghost type for the session.
+  - Map currently used in the lobby.
+- Ensures items are expired along with dead players (removal from session inventory).
+
+### Service Boundaries:
+- Encapsulates only **session-related state and metadata**.
+- Does not manage:
+  - User authentication (delegated to User Management Service).
+  - Ghost behavior (delegated to Ghost AI Service).
+  - Item catalog (delegated to Shop Service).
+- Acts as the **single source of truth** for an ongoing or paused session.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Creating, updating, and resuming game sessions.
+- Managing session players (join, leave, update status).
+- Tracking sanity, deaths, and item ownership.
+- Associating map and ghost type with a session.
+
+**Consumed by:**
+- Game Service (to run the actual gameplay loop).
+- User Management Service (to sync player profiles and stats).
+- Shop Service & Inventory Service (to validate items used in the lobby).
+- Ghost AI Service (to get lobby info for ghost behavior).
+
+ 
+
+---
+
+## 6. Map Service
+
+### Responsibilities:
+- Provides tools for users to **create and manage maps**, including:
+  - Houses with rooms connected to each other.
+  - Placement of objects inside rooms.
+  - Definition of hiding places (inaccessible to ghosts).
+- Stores predefined maps and allows dynamic map creation (custom maps).
+- Provides APIs for retrieving map layouts for gameplay.
+
+### Service Boundaries:
+- Focuses only on **map structure and object placement**.
+- Does not:
+  - Handle ghost AI (only provides hiding spots).
+  - Manage players or items in the map (handled by Lobby & Inventory).
+  - Track session state (delegated to Lobby Service).
+- Acts as a **map provider** to other services.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Creating new houses (with rooms and objects).
+- Modifying or shuffling object placement.
+- Querying hiding spots and room connectivity.
+- Retrieving stored maps.
+
+**Consumed by:**
+- Lobby Service (to assign a map to a session).
+- Ghost AI Service (to know where hiding spots and objects are).
+- Game Service (to render maps for players).
+
+
+---
+
+## 7. Ghost Service
+
+### Responsibilities:
+- Acts as an encyclopedia of all ghost types in the game world.
+- Stores and provides information about ghost **Type A symptoms**:
+  - Breaking mirrors, moving objects, creating cold spots, etc.
+  - Visible to players for guessing purposes.
+- Stores **Type B symptoms**:
+  - Hunting behavior based on player sanity or group status.
+  - Used for players to discover through observation.
+- Provides ghost data for gameplay mechanics and player education.
+
+### Service Boundaries:
+- Encapsulates only ghost-related information and symptoms.
+- Does not manage user data, session states, or player inventory.
+- Independent of game sessions; only consumed by other services for ghost info.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Retrieving ghost types and symptoms (A & B).
+- Listing ghosts available in specific maps or sessions.
+
+**Consumed by:**
+- Lobby Service (to know which ghost is active in the session).
+- Game Service (for gameplay mechanics and player feedback).
+- Journal Service (to validate player observations).
+
+### Trade-offs:
+- **Pros:** Centralized ghost information ensures consistency across the game. Easy to expand with new ghost types or symptoms.  
+- **Cons:** Requires synchronization with session state if ghost behavior changes dynamically. Large data sets may require caching for performance.  
+
+---
+
+## 8. Location Service
+
+### Responsibilities:
+- Tracks player movements in real-time.
+- Records:
+  - Current room location.
+  - Items the player interacts with.
+  - Player state (alone/in group, speaking, hiding, visible).
+  - Timestamps for each update.
+- Provides fresh location data to other services for gameplay mechanics.
+
+### Service Boundaries:
+- Only responsible for location tracking and real-time player states.
+- Does not manage user accounts, game sessions, or AI behavior.
+- Operates independently but provides data for session and game logic.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Querying current player location and state.
+- Subscribing to location updates (for live sessions).
+
+**Consumed by:**
+- Lobby Service (to manage session state and item interactions).
+- Ghost AI Service (to make decisions based on player positions).
+- Game Service (for real-time player visibility and events).
+
+### Trade-offs:
+- **Pros:** Dedicated service ensures accurate real-time tracking. Can scale independently to handle many players.  
+- **Cons:** High frequency updates may require efficient storage and caching. Needs careful handling to avoid stale data or race conditions.
 
 ---
 
@@ -123,147 +279,162 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 
 ---
 
-# Technologies & Communication Patterns
+# Ghost Hunters – Technologies and Communication Patterns
 
-## General Communication Approach:
+This project follows a **polyglot microservices architecture** to ensure modularity, scalability, and independence of each team.  
+Each microservice is implemented in a language and technology stack that best matches its business logic and performance requirements.  
+Services communicate via **REST APIs** for synchronous operations and **message queues (e.g., RabbitMQ/Kafka)** for asynchronous updates.
 
-- REST APIs for synchronous communication (simple, well-understood).
+---
 
-- gRPC / Message Queue for asynchronous events where real-time updates or decoupling are needed.
+## 1. User Management Service (JavaScript / Node.js)
 
-- WebSockets for real-time communication with players (e.g., chat, lobby updates).
+### Technologies:
+- **Node.js + Express** for REST APIs.
+- **MongoDB** for user and friend data (flexible schema for social graph).
+- **JWT** for authentication and authorization.
+- **Redis** for caching sessions and currency balances.
 
-## 1. User Management Service
-### Language & Framework:
+### Communication Patterns:
+- **REST API** for CRUD operations on users and friends.
+- **Event publishing** (via Kafka) when currency updates or new friends are added (consumed by Inventory and Lobby services).
 
-- Python
+### Motivation & Trade-offs:
+- **Pros:** Node.js handles concurrent HTTP requests efficiently, rich ecosystem for auth (Passport.js, JWT).  
+- **Cons:** Single-threaded, CPU-heavy tasks (hashing) need offloading to worker threads.  
+- **Fit:** Ideal for high-volume user interactions and real-time friend updates.
 
-- FastAPI
+---
 
-### Why:
+## 2. Ghost AI Service (JavaScript / Node.js)
 
-- Beginner-friendly, quick to prototype user flows (auth, friends).
+### Technologies:
+- **Node.js** with **Worker Threads** or **Cluster** for running ghost AI as independent actors.
+- **Socket.IO (WebSockets)** for real-time updates to the Game Service.
+- **In-memory state store** (Redis) for ghost decisions.
 
-- Good ecosystem for authentication & security (JWT, OAuth).
+### Communication Patterns:
+- **Event-driven**: broadcasts ghost state changes (hiding, haunting, attacking) to the Game Service.  
+- **REST API** for debug tools and querying ghost states.
 
-- Async support in FastAPI makes it efficient for handling many concurrent users.
+### Motivation & Trade-offs:
+- **Pros:** Event-driven model + WebSockets are perfect for real-time AI-driven interactions.  
+- **Cons:** Node.js is weaker in CPU-heavy computations; may require scaling ghost workers horizontally.  
+- **Fit:** Excellent for fast iteration on ghost logic and broadcasting AI state changes in real time.
 
-### Communication:
+---
 
-### Provides REST APIs for:
+## 3. Shop Service (C# / .NET 7)
 
-- User authentication & profile data.
+### Technologies:
+- **ASP.NET Core Web API** for catalog endpoints.
+- **SQL Server** for item and price history persistence.
+- **Entity Framework Core** for ORM.
+- **gRPC** for efficient communication with Inventory Service.
 
-- Friend system (add/remove/list).
+### Communication Patterns:
+- **REST API** for item catalog queries from players.  
+- **gRPC** for low-latency communication with Inventory Service (price validation).  
+- **Event publishing** (via RabbitMQ) when prices change, consumed by Game Service.
 
-### Consumed by:
+### Motivation & Trade-offs:
+- **Pros:** .NET provides high performance, strong typing, and enterprise-level tooling.  
+- **Cons:** More heavy-weight than scripting languages; slower prototyping.  
+- **Fit:** Perfect for financial transactions and historical price tracking where consistency is critical.
 
-- Lobby Service (fetch user info).
+---
 
-- Inventory Service (currency checks).
+## 4. Journal Service (C# / .NET 7)
 
-### Trade-offs:
+### Technologies:
+- **ASP.NET Core Web API** for CRUD journal entries.
+- **SQL Server** for storing session-based journal records.
+- **Entity Framework Core** for data modeling.
+- **Background workers** for validating journal results at session end.
 
-Python is slower than Go, but user management is more I/O-bound than CPU-heavy → acceptable.
+### Communication Patterns:
+- **REST API** for players to submit and query journals.  
+- **Async messaging** with User Management Service to award currency after validation.  
+- **REST/gRPC** with Game Service to fetch actual ghost type for comparison.
 
-## 2. Ghost AI Service
-### Language & Framework:
+### Motivation & Trade-offs:
+- **Pros:** Strong consistency model, robust schema for structured journal entries.  
+- **Cons:** More complex setup compared to Python/JS.  
+- **Fit:** Reliable choice for validation-heavy workflows where correctness matters (awarding rewards).
 
-- Python (asyncio, FastAPI for control plane).
+---
 
-### Why:
+## 5. Lobby Service (Python / FastAPI)
 
-- Python is strong for prototyping AI behavior, with libraries for state machines and simulations.
+### Technologies:
+- **FastAPI** for high-performance async REST APIs.
+- **PostgreSQL** for session state (players, sanity, items, ghosts, maps).
+- **SQLAlchemy** for ORM.
+- **Celery + Redis** for background session cleanup tasks.
 
-- Easy to spawn async tasks or processes for each ghost acting independently.
+### Communication Patterns:
+- **REST API** for creating and managing lobbies.  
+- **Event-driven messaging** (via Kafka) to sync state with Ghost AI and User Management services.  
+- **WebSockets** for real-time lobby updates to clients.
 
-- Allows fast experimentation with ghost decision-making.
+### Motivation & Trade-offs:
+- **Pros:** Python’s FastAPI is very fast to develop, async support is strong for managing multiple lobbies.  
+- **Cons:** Slower raw performance vs C#/Go; needs scaling under heavy load.  
+- **Fit:** Great for coordinating state across multiple players in a lobby.
 
-### Communication:
+---
 
-Provides async events / REST APIs:
+## 6. Map Service (Python / FastAPI)
 
-Ghost state updates (hiding, haunting, object interaction).
+### Technologies:
+- **FastAPI** for REST APIs managing maps.
+- **PostgreSQL** (JSONB) for flexible map storage (rooms, objects, hiding places).
+- **Pydantic** for schema validation of user-created maps.
 
-### Consumed by:
+### Communication Patterns:
+- **REST API** for CRUD operations on maps.  
+- **Event publishing** when new maps are created (consumed by Lobby and Ghost AI).  
+- **Read-only API** consumed by Game Service to load maps.
 
-- Lobby Service (session updates).
+### Motivation & Trade-offs:
+- **Pros:** Python is excellent for handling JSON-like structures; very flexible for user-generated content.  
+- **Cons:** Handling large map computations may need optimization or caching.  
+- **Fit:** Perfect for CRUD-heavy, content-driven service where flexibility matters more than raw speed.
 
-- Game Service indirectly for broadcasting ghost behavior.
+---
 
-### Trade-offs:
+## 7. Ghost Service
 
-Python concurrency (asyncio) is not as fast as Go, but ghost behavior logic is relatively lightweight compared to session state handling → trade-off acceptable.
+### Technologies:
+- **Node.js (Express / Fastify)** for REST API endpoints and service logic.
+- **PostgreSQL** (or any relational DB) to store ghost types and symptoms.
+- **Redis** (optional) for caching frequently accessed ghost data.
+- **Worker threads / Bull (Queue)** for batch updates or complex ghost behavior processing.
 
-## 3. Shop Service
-### Language & Framework:
+### Communication Patterns:
+- **REST API** for retrieving ghost types and symptoms.
+- **Event-driven (Message Queue, e.g., Kafka/RabbitMQ)** for notifying Lobby or Game Service about ghost updates or new ghost additions.
 
-- Go + Gin 
-- gRPC/WebSocket
+### Motivation & Trade-offs:
+- **Pros:** Node.js provides fast I/O, easy JSON handling, and event-driven concurrency for multiple requests.  
+- **Cons:** CPU-intensive tasks (complex ghost AI logic) may block the event loop; requires worker threads or separate services for heavy computations.
 
-### Why:
+---
 
-- Shop must handle real-time price updates efficiently.
+## 8. Location Service
 
-- Go provides strong concurrency via goroutines, making it perfect for event-driven updates.
+### Technologies:
+- **Node.js (Express / Fastify)** for REST API endpoints.
+- **Redis** for fast in-memory storage of player locations and real-time state.
+- **PostgreSQL** for historical location logs and session tracking.
+- **WebSockets (Socket.IO)** for real-time broadcasting of player locations.
+- **Bull / Queue workers** for background tasks such as cleanup or aggregation.
 
-- Fast and memory-efficient, ensuring scalability when many players check shop prices.
+### Communication Patterns:
+- **REST API** for querying player positions and state.
+- **WebSockets** for real-time broadcasting of location updates to Lobby and Ghost AI.
+- **Event-driven (Message Queue)** for notifying other services when player location changes trigger game events.
 
-### Communication:
-
-Provides REST APIs for:
-
-- Item catalog.
-
-- Price history queries.
-
-Provides WebSocket for:
-
-- Real-time price changes.
-
-### Consumed by:
-
-- Inventory Service (item ownership).
-
-- Lobby Service (loading items into session).
-
-### Trade-offs:
-
-Requires more boilerplate compared to Python, but Go’s performance ensures low-latency updates.
-
-## 4. Lobby Service
-### Language & Framework:
-
-- Go + Gin
-
-- gRPC
-
-- WebSocket
-
-### Why:
-
-- Lobby requires real-time updates (sanity, death, items, ghost activity).
-
-- Go handles many concurrent connections well, making it the best choice for player session tracking.
-
-- Easy to integrate with Ghost AI via gRPC and push updates via WebSocket.
-
-### Communication:
-
-Provides REST APIs + WebSocket for:
-
-- Session creation, updates, queries.
-
-- Real-time lobby updates (sanity, death, ghost activity).
-
-### Consumes:
-
-- Ghost AI (events via REST or message queue).
-
-- User Management (player profiles).
-
-- Inventory Service (item ownership).
-
-### Trade-offs:
-
-More verbose than Python, but guarantees performance under high player load.
+### Motivation & Trade-offs:
+- **Pros:** Node.js + Redis + WebSockets allows efficient real-time tracking. Flexible and easy to maintain schema for dynamic player state.  
+- **Cons:** High-frequency updates can stress the event loop; requires scaling horizontally or using worker threads for heavy workloads.

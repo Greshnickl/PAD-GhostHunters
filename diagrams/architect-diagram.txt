@@ -1,6 +1,7 @@
 flowchart LR
     Players[Players / Clients]
 
+    %% JavaScript Services
     subgraph UserManagement["User Management Service"]
         UDB[(Users DB)]
         UM[User API]
@@ -10,18 +11,65 @@ flowchart LR
         GA[Ghost AI Logic]
     end
 
+    %% C# Services
     subgraph ShopService["Shop Service"]
         SDB[(Items DB)]
         SHOP[Shop API]
     end
 
+    subgraph JournalService["Journal Service"]
+        JDB[(Journal DB)]
+        JOUR[Journal API]
+    end
+
+    %% Python Services
     subgraph LobbyService["Lobby Service"]
         LDB[(Lobby DB)]
         LOBBY[Lobby API]
     end
 
+    subgraph MapService["Map Service"]
+        MDB[(Map DB)]
+        MAP[Map API]
+    end
 
+    %% Player interactions (synchronous)
     Players <--> UM
     Players <--> GA
     Players <--> SHOP
+    Players <--> JOUR
     Players <--> LOBBY
+    Players <--> MAP
+
+    %% Service-to-service synchronous interactions (REST)
+    UM -->|REST| LOBBY
+    UM -->|REST| SHOP
+    UM -->|REST| GA
+    UM -->|REST| JOUR
+
+    GA -->|REST| LOBBY
+    GA -->|REST| MAP
+
+    SHOP -->|REST| LOBBY
+    SHOP -->|REST| GAME[Game Service]
+
+    JOUR -->|REST| LOBBY
+    JOUR -->|REST| UM
+    JOUR -->|REST| GAME
+
+    LOBBY -->|REST| MAP
+    LOBBY -->|REST| GA
+    LOBBY -->|REST| SHOP
+    LOBBY -->|REST| GAME
+
+    MAP -->|REST| LOBBY
+    MAP -->|REST| GA
+
+    %% Asynchronous interactions (Events / Message Queue)
+    UM -.->|User updates / currency events| JOUR
+    UM -.->|Friend updates events| GA
+    GA -.->|Ghost state events| GAME
+    SHOP -.->|Price update events| GAME
+    JOUR -.->|Journal validation events| UM
+    LOBBY -.->|Session state events| GAME
+    MAP -.->|Map created/updated events| LOBBY
