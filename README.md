@@ -2,10 +2,15 @@
 
 ## Game Microservices – Service Boundaries
 
-This project follows a microservices architecture to ensure modularity, scalability, and independent deployment of each component. Each service is implemented in a different language to promote polyglot programming, reflecting the diversity of team expertise and optimizing for specific business needs.
+This project is built using a **microservices architecture** to ensure modularity, scalability, and independent deployment of each component. Each service is implemented in a language chosen to best fit its specific responsibilities, allowing the team to leverage **polyglot programming** for optimal performance and maintainability.
 
-We use Python and Go, as they are simple to learn, widely supported, and well-suited for game backend scenarios.
-Python is chosen for services that need flexibility and fast iteration (user data, AI logic), while Go is selected for performance-critical and real-time state management (shop, lobby).
+We selected **JavaScript (Node.js)**, **C# (.NET)**, and **Python** for this project:  
+- **JavaScript (Node.js)** is used for services requiring high concurrency and fast development cycles, such as user management and ghost AI. Its event-driven model and rich ecosystem make it ideal for real-time operations and rapid prototyping.  
+- **C# (.NET)** is used for services that demand strong type safety, reliability, and transactional consistency, such as Shop and Journal. It provides excellent performance under load and robust tooling for enterprise-grade APIs.  
+- **Python** is chosen for services that benefit from flexibility, simplicity, and fast iteration, such as Lobby and Map. Its async capabilities and mature libraries allow efficient handling of multiple game sessions and dynamic content management.
+
+This combination of technologies allows us to **balance speed of development, runtime performance, and maintainability**, ensuring each service meets the unique demands of the game while allowing teams to work efficiently within their expertise.
+
 
 ## Services Overview
 
@@ -34,16 +39,6 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - Inventory Service (currency validation for purchases).
 - Game Service (to load player profile into active sessions).
 
-### Trade-offs:
-- **Pros:**  
-  - JavaScript (Node.js) is very strong at handling concurrent HTTP requests efficiently due to its non-blocking event loop.  
-  - Mature ecosystem (Passport.js, JWT, OAuth libraries) makes it easy to implement authentication and authorization.  
-  - Easy integration with frontend teams already using JS/TS.  
-
-- **Cons:**  
-  - Single-threaded model means CPU-heavy tasks (e.g., encryption, hashing) can block the event loop unless offloaded to worker threads.  
-  - Requires careful handling of async code to avoid callback hell or performance bottlenecks.  
-  - Less suited for very compute-heavy logic compared to languages like Go or C#.  
 
 ---
 
@@ -75,16 +70,6 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - Game Service (to update lobby state and broadcast ghost activity to players).
 - Lobby Service (to synchronize ghost type and behavior with session state).
 
-### Trade-offs:
-- **Pros:**  
-  - JavaScript (Node.js) can handle multiple concurrent lobbies with **async I/O** and event-driven architecture.  
-  - Can integrate real-time updates easily with **WebSockets (Socket.IO)** for broadcasting ghost actions to players.  
-  - Worker threads or Node.js clustering allow distributing ghost AI computations across CPU cores.  
-
-- **Cons:**  
-  - Node.js is not optimal for heavy CPU-bound AI simulations — logic may need to be simplified or offloaded to specialized services.  
-  - Debugging concurrent ghost actors across threads can become complex.  
-  - Event-driven model requires careful design to avoid race conditions or inconsistent state across lobbies.  
 
 --- 
 
@@ -115,10 +100,6 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - Lobby Service (to load selected items into sessions).
 - Game Service (to display purchasable content).
 
-### Trade-offs:
-- **Pros:** Implemented in **.NET (C# ASP.NET Core Web API)** for strong type safety, maintainability, and enterprise-grade tooling.  
-  ASP.NET Core also provides excellent performance under heavy loads, with built-in dependency injection and middleware pipelines.  
-- **Cons:** Development speed may be slower compared to lightweight frameworks due to more verbose configuration and stricter typing.  
 
 ---
 
@@ -149,11 +130,6 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - User Management Service (to reward currency for correct guesses).
 - Game Service (to compare journal entries with actual ghost).
 
-### Trade-offs:
-- **Pros:** Implemented in **.NET (C# ASP.NET Core Web API)** for structured CRUD operations with Entity Framework Core for database handling.  
-  Strong type system makes validation and business logic more robust.  
-  Integration with other .NET-based services (e.g., User Management, Lobby) is straightforward.  
-- **Cons:** Higher entry barrier for rapid prototyping compared to scripting languages. Requires more boilerplate (DTOs, Models, Migrations).  
 
 ---
 
@@ -192,9 +168,7 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - Shop Service & Inventory Service (to validate items used in the lobby).
 - Ghost AI Service (to get lobby info for ghost behavior).
 
-### Trade-offs:
-- **Pros:** Implemented in **Python (FastAPI/Flask)** for fast development, clear API design, and large ecosystem of libraries. Python’s async support (in FastAPI) allows concurrent session handling efficiently.  
-- **Cons:** Slower raw performance compared to Go or Node.js, so scaling for millions of concurrent users may require horizontal scaling (more containers/instances).  
+ 
 
 ---
 
@@ -229,11 +203,6 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 - Ghost AI Service (to know where hiding spots and objects are).
 - Game Service (to render maps for players).
 
-### Trade-offs:
-- **Pros:** Implemented in **Python (FastAPI/Flask)**, which naturally works well with JSON-based structures for maps. Flexible data modeling (e.g., Pydantic in FastAPI) ensures safe map creation and validation.  
-- **Cons:** Handling very large maps or heavy computations (like pathfinding) in pure Python could be slow — may need C-extensions or caching strategies.  
-
-
 
 
 
@@ -243,147 +212,126 @@ Python is chosen for services that need flexibility and fast iteration (user dat
 
 ---
 
-# Technologies & Communication Patterns
+# Ghost Hunters – Technologies and Communication Patterns
 
-## General Communication Approach:
+This project follows a **polyglot microservices architecture** to ensure modularity, scalability, and independence of each team.  
+Each microservice is implemented in a language and technology stack that best matches its business logic and performance requirements.  
+Services communicate via **REST APIs** for synchronous operations and **message queues (e.g., RabbitMQ/Kafka)** for asynchronous updates.
 
-- REST APIs for synchronous communication (simple, well-understood).
+---
 
-- gRPC / Message Queue for asynchronous events where real-time updates or decoupling are needed.
+## 1. User Management Service (JavaScript / Node.js)
 
-- WebSockets for real-time communication with players (e.g., chat, lobby updates).
+### Technologies:
+- **Node.js + Express** for REST APIs.
+- **MongoDB** for user and friend data (flexible schema for social graph).
+- **JWT** for authentication and authorization.
+- **Redis** for caching sessions and currency balances.
 
-## 1. User Management Service
-### Language & Framework:
+### Communication Patterns:
+- **REST API** for CRUD operations on users and friends.
+- **Event publishing** (via Kafka) when currency updates or new friends are added (consumed by Inventory and Lobby services).
 
-- Python
+### Motivation & Trade-offs:
+- **Pros:** Node.js handles concurrent HTTP requests efficiently, rich ecosystem for auth (Passport.js, JWT).  
+- **Cons:** Single-threaded, CPU-heavy tasks (hashing) need offloading to worker threads.  
+- **Fit:** Ideal for high-volume user interactions and real-time friend updates.
 
-- FastAPI
+---
 
-### Why:
+## 2. Ghost AI Service (JavaScript / Node.js)
 
-- Beginner-friendly, quick to prototype user flows (auth, friends).
+### Technologies:
+- **Node.js** with **Worker Threads** or **Cluster** for running ghost AI as independent actors.
+- **Socket.IO (WebSockets)** for real-time updates to the Game Service.
+- **In-memory state store** (Redis) for ghost decisions.
 
-- Good ecosystem for authentication & security (JWT, OAuth).
+### Communication Patterns:
+- **Event-driven**: broadcasts ghost state changes (hiding, haunting, attacking) to the Game Service.  
+- **REST API** for debug tools and querying ghost states.
 
-- Async support in FastAPI makes it efficient for handling many concurrent users.
+### Motivation & Trade-offs:
+- **Pros:** Event-driven model + WebSockets are perfect for real-time AI-driven interactions.  
+- **Cons:** Node.js is weaker in CPU-heavy computations; may require scaling ghost workers horizontally.  
+- **Fit:** Excellent for fast iteration on ghost logic and broadcasting AI state changes in real time.
 
-### Communication:
+---
 
-### Provides REST APIs for:
+## 3. Shop Service (C# / .NET 7)
 
-- User authentication & profile data.
+### Technologies:
+- **ASP.NET Core Web API** for catalog endpoints.
+- **SQL Server** for item and price history persistence.
+- **Entity Framework Core** for ORM.
+- **gRPC** for efficient communication with Inventory Service.
 
-- Friend system (add/remove/list).
+### Communication Patterns:
+- **REST API** for item catalog queries from players.  
+- **gRPC** for low-latency communication with Inventory Service (price validation).  
+- **Event publishing** (via RabbitMQ) when prices change, consumed by Game Service.
 
-### Consumed by:
+### Motivation & Trade-offs:
+- **Pros:** .NET provides high performance, strong typing, and enterprise-level tooling.  
+- **Cons:** More heavy-weight than scripting languages; slower prototyping.  
+- **Fit:** Perfect for financial transactions and historical price tracking where consistency is critical.
 
-- Lobby Service (fetch user info).
+---
 
-- Inventory Service (currency checks).
+## 4. Journal Service (C# / .NET 7)
 
-### Trade-offs:
+### Technologies:
+- **ASP.NET Core Web API** for CRUD journal entries.
+- **SQL Server** for storing session-based journal records.
+- **Entity Framework Core** for data modeling.
+- **Background workers** for validating journal results at session end.
 
-Python is slower than Go, but user management is more I/O-bound than CPU-heavy → acceptable.
+### Communication Patterns:
+- **REST API** for players to submit and query journals.  
+- **Async messaging** with User Management Service to award currency after validation.  
+- **REST/gRPC** with Game Service to fetch actual ghost type for comparison.
 
-## 2. Ghost AI Service
-### Language & Framework:
+### Motivation & Trade-offs:
+- **Pros:** Strong consistency model, robust schema for structured journal entries.  
+- **Cons:** More complex setup compared to Python/JS.  
+- **Fit:** Reliable choice for validation-heavy workflows where correctness matters (awarding rewards).
 
-- Python (asyncio, FastAPI for control plane).
+---
 
-### Why:
+## 5. Lobby Service (Python / FastAPI)
 
-- Python is strong for prototyping AI behavior, with libraries for state machines and simulations.
+### Technologies:
+- **FastAPI** for high-performance async REST APIs.
+- **PostgreSQL** for session state (players, sanity, items, ghosts, maps).
+- **SQLAlchemy** for ORM.
+- **Celery + Redis** for background session cleanup tasks.
 
-- Easy to spawn async tasks or processes for each ghost acting independently.
+### Communication Patterns:
+- **REST API** for creating and managing lobbies.  
+- **Event-driven messaging** (via Kafka) to sync state with Ghost AI and User Management services.  
+- **WebSockets** for real-time lobby updates to clients.
 
-- Allows fast experimentation with ghost decision-making.
+### Motivation & Trade-offs:
+- **Pros:** Python’s FastAPI is very fast to develop, async support is strong for managing multiple lobbies.  
+- **Cons:** Slower raw performance vs C#/Go; needs scaling under heavy load.  
+- **Fit:** Great for coordinating state across multiple players in a lobby.
 
-### Communication:
+---
 
-Provides async events / REST APIs:
+## 6. Map Service (Python / FastAPI)
 
-Ghost state updates (hiding, haunting, object interaction).
+### Technologies:
+- **FastAPI** for REST APIs managing maps.
+- **PostgreSQL** (JSONB) for flexible map storage (rooms, objects, hiding places).
+- **Pydantic** for schema validation of user-created maps.
 
-### Consumed by:
+### Communication Patterns:
+- **REST API** for CRUD operations on maps.  
+- **Event publishing** when new maps are created (consumed by Lobby and Ghost AI).  
+- **Read-only API** consumed by Game Service to load maps.
 
-- Lobby Service (session updates).
+### Motivation & Trade-offs:
+- **Pros:** Python is excellent for handling JSON-like structures; very flexible for user-generated content.  
+- **Cons:** Handling large map computations may need optimization or caching.  
+- **Fit:** Perfect for CRUD-heavy, content-driven service where flexibility matters more than raw speed.
 
-- Game Service indirectly for broadcasting ghost behavior.
-
-### Trade-offs:
-
-Python concurrency (asyncio) is not as fast as Go, but ghost behavior logic is relatively lightweight compared to session state handling → trade-off acceptable.
-
-## 3. Shop Service
-### Language & Framework:
-
-- Go + Gin 
-- gRPC/WebSocket
-
-### Why:
-
-- Shop must handle real-time price updates efficiently.
-
-- Go provides strong concurrency via goroutines, making it perfect for event-driven updates.
-
-- Fast and memory-efficient, ensuring scalability when many players check shop prices.
-
-### Communication:
-
-Provides REST APIs for:
-
-- Item catalog.
-
-- Price history queries.
-
-Provides WebSocket for:
-
-- Real-time price changes.
-
-### Consumed by:
-
-- Inventory Service (item ownership).
-
-- Lobby Service (loading items into session).
-
-### Trade-offs:
-
-Requires more boilerplate compared to Python, but Go’s performance ensures low-latency updates.
-
-## 4. Lobby Service
-### Language & Framework:
-
-- Go + Gin
-
-- gRPC
-
-- WebSocket
-
-### Why:
-
-- Lobby requires real-time updates (sanity, death, items, ghost activity).
-
-- Go handles many concurrent connections well, making it the best choice for player session tracking.
-
-- Easy to integrate with Ghost AI via gRPC and push updates via WebSocket.
-
-### Communication:
-
-Provides REST APIs + WebSocket for:
-
-- Session creation, updates, queries.
-
-- Real-time lobby updates (sanity, death, ghost activity).
-
-### Consumes:
-
-- Ghost AI (events via REST or message queue).
-
-- User Management (player profiles).
-
-- Inventory Service (item ownership).
-
-### Trade-offs:
-
-More verbose than Python, but guarantees performance under high player load.
+---
