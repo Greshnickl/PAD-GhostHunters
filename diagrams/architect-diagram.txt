@@ -2,35 +2,46 @@ flowchart LR
     Players[Players / Clients]
 
     %% JavaScript Services
-    subgraph UserManagement["User Management Service"]
+    subgraph UserManagement["User Management Service (JS)"]
         UDB[(Users DB)]
         UM[User API]
     end
 
-    subgraph GhostAI["Ghost AI Service"]
+    subgraph GhostAI["Ghost AI Service (JS)"]
         GA[Ghost AI Logic]
     end
 
     %% C# Services
-    subgraph ShopService["Shop Service"]
+    subgraph ShopService["Shop Service (C#)"]
         SDB[(Items DB)]
         SHOP[Shop API]
     end
 
-    subgraph JournalService["Journal Service"]
+    subgraph JournalService["Journal Service (C#)"]
         JDB[(Journal DB)]
         JOUR[Journal API]
     end
 
     %% Python Services
-    subgraph LobbyService["Lobby Service"]
+    subgraph LobbyService["Lobby Service (Python)"]
         LDB[(Lobby DB)]
         LOBBY[Lobby API]
     end
 
-    subgraph MapService["Map Service"]
+    subgraph MapService["Map Service (Python)"]
         MDB[(Map DB)]
         MAP[Map API]
+    end
+
+    %% Additional JS Services
+    subgraph GhostService["Ghost Service (JS)"]
+        GHOSTDB[(Ghost DB)]
+        GHOSTAPI[Ghost API]
+    end
+
+    subgraph LocationService["Location Service (JS)"]
+        LOCDB[(Location DB / Redis)]
+        LOCAPI[Location API]
     end
 
     %% Player interactions (synchronous)
@@ -40,36 +51,48 @@ flowchart LR
     Players <--> JOUR
     Players <--> LOBBY
     Players <--> MAP
+    Players <--> GHOSTAPI
+    Players <--> LOCAPI
 
     %% Service-to-service synchronous interactions (REST)
     UM -->|REST| LOBBY
     UM -->|REST| SHOP
     UM -->|REST| GA
     UM -->|REST| JOUR
+    UM -->|REST| LOCAPI
 
     GA -->|REST| LOBBY
     GA -->|REST| MAP
+    GA -->|REST| GHOSTAPI
 
     SHOP -->|REST| LOBBY
-    SHOP -->|REST| GAME[Game Service]
+    SHOP -->|REST| JOUR
 
-    JOUR -->|REST| LOBBY
     JOUR -->|REST| UM
-    JOUR -->|REST| GAME
+    JOUR -->|REST| LOBBY
 
     LOBBY -->|REST| MAP
     LOBBY -->|REST| GA
     LOBBY -->|REST| SHOP
-    LOBBY -->|REST| GAME
+    LOBBY -->|REST| LOCAPI
+    LOBBY -->|REST| GHOSTAPI
 
     MAP -->|REST| LOBBY
     MAP -->|REST| GA
 
+    GHOSTAPI -->|REST| LOBBY
+
+    LOCAPI -->|REST| LOBBY
+    LOCAPI -->|REST| GA
+
     %% Asynchronous interactions (Events / Message Queue)
     UM -.->|User updates / currency events| JOUR
     UM -.->|Friend updates events| GA
-    GA -.->|Ghost state events| GAME
-    SHOP -.->|Price update events| GAME
+    GA -.->|Ghost state events| LOBBY
+    GA -.->|Ghost state events| Players
+    SHOP -.->|Price update events| LOBBY
     JOUR -.->|Journal validation events| UM
-    LOBBY -.->|Session state events| GAME
+    LOBBY -.->|Session state events| GAME[Game Service]
     MAP -.->|Map created/updated events| LOBBY
+    LOCAPI -.->|Location change events| GA
+    LOCAPI -.->|Location change events| LOBBY
