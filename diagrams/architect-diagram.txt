@@ -1,98 +1,77 @@
 flowchart LR
     Players[Players / Clients]
 
-    %% JavaScript Services
-    subgraph UserManagement["User Management Service (JS)"]
+    %% User Management
+    subgraph UserManagement["User Management Service"]
         UDB[(Users DB)]
-        UM[User API]
+        UM[Users]
     end
 
-    subgraph GhostAI["Ghost AI Service (JS)"]
-        GA[Ghost AI Logic]
+    %% Ghost AI
+    subgraph GhostAI["Ghost AI Service"]
+        GA[Ghost AI]
     end
 
-    %% C# Services
-    subgraph ShopService["Shop Service (C#)"]
+    %% Shop
+    subgraph ShopService["Shop Service"]
         SDB[(Items DB)]
-        SHOP[Shop API]
+        SHOP[Shop]
     end
 
-    subgraph JournalService["Journal Service (C#)"]
-        JDB[(Journal DB)]
-        JOUR[Journal API]
+    %% Journal
+    subgraph JournalService["Journal Service"]
+        JDB[(Journals DB)]
+        JRNL[Journal]
     end
 
-    %% Python Services
-    subgraph LobbyService["Lobby Service (Python)"]
+    %% Lobby
+    subgraph LobbyService["Lobby Service"]
         LDB[(Lobby DB)]
-        LOBBY[Lobby API]
+        LOBBY[Lobby]
     end
 
-    subgraph MapService["Map Service (Python)"]
-        MDB[(Map DB)]
-        MAP[Map API]
+    %% Map
+    subgraph MapService["Map Service"]
+        MDB[(Maps DB)]
+        MAP[Map]
     end
 
-    %% Additional JS Services
-    subgraph GhostService["Ghost Service (JS)"]
-        GHOSTDB[(Ghost DB)]
-        GHOSTAPI[Ghost API]
+    %% Ghost Encyclopedia
+    subgraph GhostService["Ghost Service"]
+        GDB[(Ghost Types DB)]
+        GHOST[Ghost]
     end
 
-    subgraph LocationService["Location Service (JS)"]
-        LOCDB[(Location DB / Redis)]
-        LOCAPI[Location API]
+    %% Location Tracking
+    subgraph LocationService["Location Service"]
+        LOCDB[(Location DB)]
+        LOC[Location]
     end
 
-    %% Player interactions (synchronous)
-    Players <--> UM
-    Players <--> GA
-    Players <--> SHOP
-    Players <--> JOUR
-    Players <--> LOBBY
-    Players <--> MAP
-    Players <--> GHOSTAPI
-    Players <--> LOCAPI
+    %% --- Players direct sync APIs ---
+    Players -- "POST /users/register, login" --> UM:::sync
+    Players -- "GET /items, POST /items" --> SHOP:::sync
+    Players -- "POST /journals, GET /journals" --> JRNL:::sync
+    Players -- "POST /lobbies, GET /lobbies" --> LOBBY:::sync
+    Players -- "GET /maps, POST /maps" --> MAP:::sync
+    Players -- "GET /ghosts, POST /ghosts" --> GHOST:::sync
+    Players -- "POST /location/track, GET latest" --> LOC:::sync
 
-    %% Service-to-service synchronous interactions (REST)
-    UM -->|REST| LOBBY
-    UM -->|REST| SHOP
-    UM -->|REST| GA
-    UM -->|REST| JOUR
-    UM -->|REST| LOCAPI
+    %% --- Cross-service interactions ---
+    LOBBY -- "POST /ghostai/lobbies/{id}/spawn" --> GA:::sync
+    GA -- "events: haunting, movement" --> LOBBY:::async
 
-    GA -->|REST| LOBBY
-    GA -->|REST| MAP
-    GA -->|REST| GHOSTAPI
+    LOBBY -- "GET /users/{id}" --> UM:::sync
+    LOBBY -- "GET /maps/{id}" --> MAP:::sync
 
-    SHOP -->|REST| LOBBY
-    SHOP -->|REST| JOUR
+    JRNL -- "GET /users/{id}" --> UM:::sync
+    JRNL -- "GET /lobbies/{id}" --> LOBBY:::sync
 
-    JOUR -->|REST| UM
-    JOUR -->|REST| LOBBY
+    GA -- "events: player positions" --> LOC:::async
+    LOC -- "stream: location updates" --> GA:::async
 
-    LOBBY -->|REST| MAP
-    LOBBY -->|REST| GA
-    LOBBY -->|REST| SHOP
-    LOBBY -->|REST| LOCAPI
-    LOBBY -->|REST| GHOSTAPI
+    GA -- "GET /ghosts/{id}" --> GHOST:::sync
 
-    MAP -->|REST| LOBBY
-    MAP -->|REST| GA
-
-    GHOSTAPI -->|REST| LOBBY
-
-    LOCAPI -->|REST| LOBBY
-    LOCAPI -->|REST| GA
-
-    %% Asynchronous interactions (Events / Message Queue)
-    UM -.->|User updates / currency events| JOUR
-    UM -.->|Friend updates events| GA
-    GA -.->|Ghost state events| LOBBY
-    GA -.->|Ghost state events| Players
-    SHOP -.->|Price update events| LOBBY
-    JOUR -.->|Journal validation events| UM
-    LOBBY -.->|Session state events| GAME[Game Service]
-    MAP -.->|Map created/updated events| LOBBY
-    LOCAPI -.->|Location change events| GA
-    LOCAPI -.->|Location change events| LOBBY
+    %% Legend styles
+    classDef sync stroke:#2c7be5,stroke-width:2px,color:#2c7be5;
+    classDef async stroke:#e67e22,stroke-dasharray: 5 5,stroke-width:2px,color:#e67e22;
