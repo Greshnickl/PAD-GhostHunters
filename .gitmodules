@@ -16,3 +16,6 @@
 [submodule "PAD-GameService"]
 	path = PAD-GameService
 	url = https://github.com/Greshnickl/PAD-GameService
+[submodule "PAD-Journal-Service"]
+	path = PAD-Journal-Service
+	url = https://github.com/s1nss/PAD-Journal-Service.git
