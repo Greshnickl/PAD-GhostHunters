@@ -19,3 +19,6 @@
 [submodule "PAD-MapService"]
 	path = PAD-MapService
 	url = https://github.com/ovidiu123/PAD-MapService
+[submodule "PAD-LocationService"]
+	path = PAD-LocationService
+	url = https://github.com/selavii/PAD-LocationService
