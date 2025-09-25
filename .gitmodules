@@ -13,3 +13,9 @@
 [submodule "PAD-GhostService"]
 	path = PAD-GhostService
 	url = https://github.com/selavii/PAD-GhostService.git
+[submodule "PAD-LobbyService"]
+	path = PAD-LobbyService
+	url = https://github.com/ovidiu123/PAD-LobbyService
+[submodule "PAD-MapService"]
+	path = PAD-MapService
+	url = https://github.com/ovidiu123/PAD-MapService
