@@ -10,3 +10,6 @@
 [submodule "PAD-Shop-Service"]
 	path = PAD-Shop-Service
 	url = https://github.com/s1nss/PAD-Shop-Service.git
+[submodule "PAD-GhostService"]
+	path = PAD-GhostService
+	url = https://github.com/selavii/PAD-GhostService.git
