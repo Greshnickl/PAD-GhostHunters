@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "PAD Map Service",
+    "description": "API for managing game maps, rooms and objects",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3005",
+      "type": "string"
+    },
+    {
+      "key": "mapId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Maps",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/maps",
+          "host": ["{{baseUrl}}"],
+          "path": ["maps"]
+        }
+      }
+    },
+    {
+      "name": "Get Map Details",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/maps/{{mapId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["maps", "{{mapId}}"]
+        }
+      }
+    },
+    {
+      "name": "Create Map",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Bleasdale Farmhouse\",\n  \"rooms\": [{ \"name\": \"Living Room\" }, { \"name\": \"Basement\" }]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/maps",
+          "host": ["{{baseUrl}}"],
+          "path": ["maps"]
+        }
+      }
+    },
+    {
+      "name": "Update Map",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Bleasdale Farmhouse (v2)\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/maps/{{mapId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["maps", "{{mapId}}"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

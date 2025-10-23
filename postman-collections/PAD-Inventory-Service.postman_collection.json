@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "PAD Inventory Service",
+    "description": "API for managing player inventory and items",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3008",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user-123",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "item-456",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get User Inventory",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/inventory/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["inventory", "{{userId}}"]
+        }
+      }
+    },
+    {
+      "name": "Add Item to Inventory",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"itemId\": \"{{itemId}}\",\n  \"name\": \"EMF Reader\",\n  \"durability\": 10\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/inventory/{{userId}}/add",
+          "host": ["{{baseUrl}}"],
+          "path": ["inventory", "{{userId}}", "add"]
+        }
+      }
+    },
+    {
+      "name": "Update Item",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"itemId\": \"{{itemId}}\",\n  \"durability\": 8,\n  \"equipped\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/inventory/{{userId}}/update",
+          "host": ["{{baseUrl}}"],
+          "path": ["inventory", "{{userId}}", "update"]
+        }
+      }
+    },
+    {
+      "name": "Remove Item",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/inventory/{{userId}}/remove/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["inventory", "{{userId}}", "remove", "{{itemId}}"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

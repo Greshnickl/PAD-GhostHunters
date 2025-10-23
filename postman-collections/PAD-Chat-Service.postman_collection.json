@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "PAD Chat Service",
+    "description": "API for real-time chat with WebSocket support",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3009",
+      "type": "string"
+    },
+    {
+      "key": "lobbyId",
+      "value": "lobby-123",
+      "type": "string"
+    },
+    {
+      "key": "senderId",
+      "value": "user-456",
+      "type": "string"
+    },
+    {
+      "key": "senderName",
+      "value": "Danik",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Chat History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/chat/{{lobbyId}}/history",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat", "{{lobbyId}}", "history"]
+        }
+      }
+    },
+    {
+      "name": "Send Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"senderId\": \"{{senderId}}\",\n  \"senderName\": \"{{senderName}}\",\n  \"message\": \"Heading to the garage, cover me!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/chat/{{lobbyId}}/send",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat", "{{lobbyId}}", "send"]
+        }
+      }
+    },
+    {
+      "name": "Clear Chat History",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/chat/{{lobbyId}}/clear",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat", "{{lobbyId}}", "clear"]
+        }
+      }
+    },
+    {
+      "name": "Get Chat Stats",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/chat/{{lobbyId}}/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["chat", "{{lobbyId}}", "stats"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

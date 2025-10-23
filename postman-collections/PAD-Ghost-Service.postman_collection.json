@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "PAD Ghost Service",
+    "description": "API for managing ghost types and symptoms",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3006",
+      "type": "string"
+    },
+    {
+      "key": "ghostId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Ghosts",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/ghosts",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghosts"]
+        }
+      }
+    },
+    {
+      "name": "Get Ghost Details",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/ghosts/{{ghostId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghosts", "{{ghostId}}"]
+        }
+      }
+    },
+    {
+      "name": "Create Ghost Type",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Yurei\",\n  \"typeASymptoms\": [\"Freezing\", \"Ghost orbs\"]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ghosts",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghosts"]
+        }
+      }
+    },
+    {
+      "name": "Update Ghost Type",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Yurei (v2)\",\n  \"typeASymptoms\": [\"Freezing\", \"Orbs\", \"Footsteps\"]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ghosts/{{ghostId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghosts", "{{ghostId}}"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

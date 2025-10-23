@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "PAD Shop Service",
+    "description": "API for managing shop items and prices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Items",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["items"]
+        }
+      }
+    },
+    {
+      "name": "Get Item Details",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["items", "{{itemId}}"]
+        }
+      }
+    },
+    {
+      "name": "Get Price History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/items/{{itemId}}/prices",
+          "host": ["{{baseUrl}}"],
+          "path": ["items", "{{itemId}}", "prices"]
+        }
+      }
+    },
+    {
+      "name": "Create Item",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"UV Flashlight\",\n  \"description\": \"Reveals traces.\",\n  \"durability\": 8,\n  \"price\": { \"amount\": 40, \"currency\": \"CRD\" }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["items"]
+        }
+      }
+    },
+    {
+      "name": "Update Price",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": { \"amount\": 55, \"currency\": \"CRD\" }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/items/{{itemId}}/price",
+          "host": ["{{baseUrl}}"],
+          "path": ["items", "{{itemId}}", "price"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "PAD Ghost AI Service",
+    "description": "API for managing AI ghost workers in gaming lobbies",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "lobbyId",
+      "value": "lobby-123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Spawn AI Worker",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ghostTypeId\": \"ghost-001\",\n  \"mapId\": \"map-001\",\n  \"difficulty\": \"NORMAL\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ghostai/lobbies/{{lobbyId}}/spawn",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghostai", "lobbies", "{{lobbyId}}", "spawn"]
+        }
+      }
+    },
+    {
+      "name": "Update Context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"players\": [\n    {\n      \"userId\": \"user-001\",\n      \"sanity\": 72.5,\n      \"roomId\": \"room-001\",\n      \"alone\": true\n    }\n  ],\n  \"objects\": [\n    {\n      \"id\": \"obj-001\",\n      \"state\": \"BROKEN\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/ghostai/lobbies/{{lobbyId}}/update-context",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghostai", "lobbies", "{{lobbyId}}", "update-context"]
+        }
+      }
+    },
+    {
+      "name": "Stop AI Worker",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/ghostai/lobbies/{{lobbyId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghostai", "lobbies", "{{lobbyId}}"]
+        }
+      }
+    },
+    {
+      "name": "Get AI Status",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/ghostai/lobbies/{{lobbyId}}/status",
+          "host": ["{{baseUrl}}"],
+          "path": ["ghostai", "lobbies", "{{lobbyId}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

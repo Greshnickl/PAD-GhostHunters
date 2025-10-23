@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "PAD Lobby Service",
+    "description": "API for managing gaming lobbies and players",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3004",
+      "type": "string"
+    },
+    {
+      "key": "lobbyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user-123",
+      "type": "string"
+    },
+    {
+      "key": "hostUserId",
+      "value": "host-123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Lobby",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hostUserId\": \"{{hostUserId}}\",\n  \"mapId\": \"uuid-map\",\n  \"difficulty\": \"HARD\",\n  \"maxPlayers\": 4\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/lobbies",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies"]
+        }
+      }
+    },
+    {
+      "name": "Join Lobby",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}/join",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}", "join"]
+        }
+      }
+    },
+    {
+      "name": "Leave Lobby",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}/leave",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}", "leave"]
+        }
+      }
+    },
+    {
+      "name": "Update Player State",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sanity\": 45.3,\n  \"dead\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}/players/{{userId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}", "players", "{{userId}}"]
+        }
+      }
+    },
+    {
+      "name": "Bring Item to Lobby",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"inventoryId\": \"uuid-inv-1\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}/items/bring",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}", "items", "bring"]
+        }
+      }
+    },
+    {
+      "name": "Get Lobby State",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

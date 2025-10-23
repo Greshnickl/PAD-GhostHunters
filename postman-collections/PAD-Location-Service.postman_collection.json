@@ -1,0 +1,91 @@
+{
+  "info": {
+    "name": "PAD Location Service",
+    "description": "API for tracking player locations and movements",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3007",
+      "type": "string"
+    },
+    {
+      "key": "lobbyId",
+      "value": "lobby-123",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user-456",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Track Location",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"lobbyId\": \"{{lobbyId}}\",\n  \"roomId\": \"uuid-r2\",\n  \"isSpeaking\": true,\n  \"group\": [\"uuid-u2\"],\n  \"isHiding\": false,\n  \"at\": \"2025-09-09T10:05:30Z\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/location/track",
+          "host": ["{{baseUrl}}"],
+          "path": ["location", "track"]
+        }
+      }
+    },
+    {
+      "name": "Get Latest Location",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/location/lobbies/{{lobbyId}}/users/{{userId}}/latest",
+          "host": ["{{baseUrl}}"],
+          "path": ["location", "lobbies", "{{lobbyId}}", "users", "{{userId}}", "latest"]
+        }
+      }
+    },
+    {
+      "name": "Get Location History",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/location/lobbies/{{lobbyId}}/users/{{userId}}/history",
+          "host": ["{{baseUrl}}"],
+          "path": ["location", "lobbies", "{{lobbyId}}", "users", "{{userId}}", "history"]
+        }
+      }
+    },
+    {
+      "name": "Get All Lobby Locations",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/location/lobbies/{{lobbyId}}/locations",
+          "host": ["{{baseUrl}}"],
+          "path": ["location", "lobbies", "{{lobbyId}}", "locations"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}

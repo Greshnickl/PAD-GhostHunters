@@ -1,0 +1,106 @@
+{
+  "info": {
+    "name": "PAD Journal Service",
+    "description": "API for managing player journals and ghost observations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3003",
+      "type": "string"
+    },
+    {
+      "key": "lobbyId",
+      "value": "lobby-123",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "user-456",
+      "type": "string"
+    },
+    {
+      "key": "journalId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Journal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"lobbyId\": \"{{lobbyId}}\",\n  \"userId\": \"{{userId}}\",\n  \"observations\": [\n    { \"symptom\": \"Freezing temperature\", \"evidence\": \"Thermo at -5°C\" }\n  ],\n  \"guessGhostTypeId\": \"uuid-ghost\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/journals",
+          "host": ["{{baseUrl}}"],
+          "path": ["journals"]
+        }
+      }
+    },
+    {
+      "name": "Get Journal",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/journals/{{journalId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["journals", "{{journalId}}"]
+        }
+      }
+    },
+    {
+      "name": "Get Lobby Journals",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/lobbies/{{lobbyId}}/journals",
+          "host": ["{{baseUrl}}"],
+          "path": ["lobbies", "{{lobbyId}}", "journals"]
+        }
+      }
+    },
+    {
+      "name": "Finalize Journal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"actualGhostTypeId\": \"uuid-ghost-real\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/journals/{{journalId}}/finalize",
+          "host": ["{{baseUrl}}"],
+          "path": ["journals", "{{journalId}}", "finalize"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    }
+  ]
+}
