@@ -1234,6 +1234,185 @@ Get the latest known location for a user.
 }
 ```
 
+
+# API Endpoints for New Services
+
+## Inventory Service
+
+### GET `/inventory/{userId}`
+**Description**  
+Retrieve the list of items owned by a player.
+
+**Response**
+```json
+{
+  "userId": "uuid-user",
+  "items": [
+    {
+      "id": "uuid-item1",
+      "name": "EMF Reader",
+      "durability": 7,
+      "maxDurability": 10,
+      "equipped": false
+    },
+    {
+      "id": "uuid-item2",
+      "name": "Flashlight",
+      "durability": 3,
+      "maxDurability": 5,
+      "equipped": true
+    }
+  ]
+}
+```
+
+### POST `/inventory/{userId}/add`
+**Description**  
+Add a new item to the player’s inventory (after purchase).
+
+**Payload**
+```json
+{
+  "itemId": "uuid-item1",
+  "name": "EMF Reader",
+  "durability": 10
+}
+```
+
+**Response**
+```json
+{
+  "message": "Item added successfully",
+  "inventoryId": "uuid-inv-entry"
+}
+```
+
+### PATCH `/inventory/{userId}/update`
+**Description**  
+Update item durability or equipped status.
+
+**Payload**
+```json
+{
+  "itemId": "uuid-item1",
+  "durability": 8,
+  "equipped": true
+}
+```
+
+**Response**
+```json
+{
+  "itemId": "uuid-item1",
+  "durability": 8,
+  "equipped": true,
+  "status": "updated"
+}
+```
+
+### DELETE `/inventory/{userId}/remove/{itemId}`
+**Description**  
+Remove an item from the player’s inventory (e.g., after breakage or expiration).
+
+**Response**
+```json
+{
+  "message": "Item removed successfully",
+  "removedItemId": "uuid-item1"
+}
+```
+
+---
+
+## Chat Service
+
+### GET `/chat/{lobbyId}/history`
+**Description**  
+Retrieve chat history for a specific lobby or session.
+
+**Response**
+```json
+{
+  "lobbyId": "uuid-lobby",
+  "messages": [
+    {
+      "senderId": "uuid-user1",
+      "senderName": "Danik",
+      "message": "Anyone see ghost activity?",
+      "timestamp": "2025-10-23T19:40:00Z"
+    },
+    {
+      "senderId": "uuid-user2",
+      "senderName": "Vlad",
+      "message": "Yes, EMF 5 in the basement!",
+      "timestamp": "2025-10-23T19:41:00Z"
+    }
+  ]
+}
+```
+
+### POST `/chat/{lobbyId}/send`
+**Description**  
+Send a chat message to the lobby (real-time broadcast).
+
+**Payload**
+```json
+{
+  "senderId": "uuid-user1",
+  "senderName": "Danik",
+  "message": "Heading to the garage, cover me!"
+}
+```
+
+**Response**
+```json
+{
+  "status": "sent",
+  "lobbyId": "uuid-lobby",
+  "timestamp": "2025-10-23T19:45:00Z"
+}
+```
+
+### WebSocket `/chat/{lobbyId}/connect`
+**Description**  
+Establish a real-time WebSocket connection for in-session chat updates.
+
+**Example Event (Incoming Message)**
+```json
+{
+  "event": "new_message",
+  "data": {
+    "senderId": "uuid-user3",
+    "senderName": "Catalin",
+    "message": "Ghost is active on the second floor!",
+    "timestamp": "2025-10-23T19:47:00Z"
+  }
+}
+```
+
+**Example Event (Connection Confirmation)**
+```json
+{
+  "event": "connected",
+  "data": {
+    "lobbyId": "uuid-lobby",
+    "status": "listening"
+  }
+}
+```
+
+### DELETE `/chat/{lobbyId}/clear`
+**Description**  
+Clear the chat history for a session (admin or system command).
+
+**Response**
+```json
+{
+  "message": "Chat history cleared for lobby uuid-lobby"
+}
+```
+
+
 ---
 
 ### Notes
