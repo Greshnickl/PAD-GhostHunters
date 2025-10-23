@@ -293,7 +293,81 @@ This combination of technologies allows us to **balance speed of development, ru
 - **Pros:** Dedicated service ensures accurate, scalable real-time tracking.  
 - **Cons:** Frequent updates can impact performance; requires caching or event batching to maintain consistency.
 
+## 9. Inventory Service
+
+### Technologies and Communication Patterns
+- **Language:** Python  
+- **Framework:** FastAPI  
+- **Database:** PostgreSQL  
+- **Communication:** REST (HTTP/JSON)
+
+### Responsibilities:
+- Manages all player-owned items, including equipment, consumables, and tools.  
+- Tracks item durability, ownership, and session-based usage.  
+- Validates purchases using data from the **Shop Service** and **User Management Service**.  
+- Removes expired or broken items after sessions.  
+- Provides inventory data to other services for gameplay logic and user interface updates.
+
+### Service Boundaries:
+- Responsible only for player inventory and item lifecycle.  
+- Does not manage catalog data (handled by **Shop Service**) or session state (handled by **Lobby Service**).  
+- Operates independently, exposing inventory information and updates to relevant services.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- CRUD operations on player inventories.  
+- Updating durability and removing expired items.  
+- Querying owned items and their states.
+
+**Consumed by:**
+- **Shop Service** – for validating purchases.  
+- **Lobby Service** – for loading items into active sessions.  
+- **Game Service** – for gameplay-related item usage and effects.  
+- **User Management Service** – for balance adjustments after transactions.
+
+### Trade-offs:
+- **Pros:** Centralized inventory control ensures data integrity and consistent item state across sessions.  
+- **Cons:** Synchronization between multiple services can introduce latency; background workers or queues are recommended for high-load operations.
 ---
+
+## 10. Chat Service
+
+### Technologies and Communication Patterns
+- **Language:** Python  
+- **Framework:** FastAPI + WebSockets  
+- **Database:** PostgreSQL  
+- **Communication:** WebSockets / REST (HTTP/JSON)
+
+### Responsibilities:
+- Enables in-game chat between players (text and optional voice).  
+- Handles message delivery, logging, and access control per session.  
+- Supports both **proximity chat** and **radio chat** modes.  
+- Persists chat history for post-session review or moderation.  
+- Integrates with the **Lobby Service** for player grouping and permissions.
+
+### Service Boundaries:
+- Focused solely on communication between players.  
+- Does not handle session logic or ghost AI behavior.  
+- Operates independently while connecting to active sessions for real-time updates.
+
+### Interfaces / Consumers:
+
+**Provides APIs for:**
+- Opening and closing chat channels for sessions.  
+- Sending, receiving, and archiving messages.  
+- Retrieving stored chat logs.
+
+**Consumed by:**
+- **Lobby Service** – for player room association and permissions.  
+- **Game Service** – for real-time communication during gameplay.  
+- **User Management Service** – for player data synchronization.
+
+### Trade-offs:
+- **Pros:** WebSockets provide low-latency real-time communication and a responsive in-game experience.  
+- **Cons:** Requires connection pooling and scaling strategies for large sessions; high concurrency can strain resources.
+---
+
 
 ### Architecture Diagram
 
